@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-For example, delete any tweet from after *January 1, 2013*
+For example, delete any tweet from after *January 1, 2013*:
 ```bash
 python deletetweets.py -s 2013-01-01
 ```
