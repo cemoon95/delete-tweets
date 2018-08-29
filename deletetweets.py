@@ -12,14 +12,21 @@ from dateutil.parser import parse
 __author__ = "Koen Rouwhorst"
 __version__ = "0.1.1"
 
-def delete(api, date, r):
+#Remove the "#" in the next four lines and insert the keys
+#os.environ["TWITTER_CONSUMER_KEY"]=""
+#os.environ["TWITTER_CONSUMER_SECRET"]=""
+#os.environ["TWITTER_ACCESS_TOKEN"]=""
+#os.environ["TWITTER_ACCESS_TOKEN_SECRET"]=""
+
+def delete(api, start, date, r):
     with io.open("tweets.csv", encoding='utf-8') as file:
         count = 0
 
         for row in csv.DictReader(file):
             tweet_id = int(row["tweet_id"])
             tweet_date = parse(row["timestamp"], ignoretz=True).date()
-
+            if start != "" and tweet_date < parse(start).date():
+                continue
             if date != "" and tweet_date >= parse(date).date():
                 continue
 
@@ -32,7 +39,7 @@ def delete(api, date, r):
 
                 api.DestroyStatus(tweet_id)
                 count += 1
-                time.sleep(0.5)
+                time.sleep(0.2)
 
             except twitter.TwitterError as err:
                 print("Exception: %s\n" % err.message)
@@ -44,7 +51,16 @@ def error(msg, exit_code=1):
     exit(exit_code)
 
 def main():
+
+    TWITTER_CONSUMER_KEY="4ABmBMart6NrG9oTduBEwfPcw"
+    TWITTER_CONSUMER_SECRET="GjPqhlMBdSR95C4EejQ5WLbGmvWmvcQ5mTreFLtFjxInuvyCpD"
+    TWITTER_ACCESS_TOKEN="251897908-naZSS05dSvSu7jsHVWE5CxhcFfMyPwSbnCmBdR2p"
+    TWITTER_ACCESS_TOKEN_SECRET="OKBwzczaogKMBZwUaX06q8jcGMk2FAecuqMh2EmSes1wl"
+	
+	
     parser = argparse.ArgumentParser(description="Delete old tweets.")
+    parser.add_argument("-s", dest="start", required=True,
+                        help="Delete tweets after this date")
     parser.add_argument("-d", dest="date", required=True,
                         help="Delete tweets until this date")
     parser.add_argument("-r", dest="restrict", choices=["reply", "retweet"],
@@ -63,7 +79,7 @@ def main():
                       access_token_key=os.environ['TWITTER_ACCESS_TOKEN'],
                       access_token_secret=os.environ['TWITTER_ACCESS_TOKEN_SECRET'])
 
-    delete(api, args.date, args.restrict)
+    delete(api, args.start, args.date, args.restrict)
 
 if __name__ == "__main__":
     main()
